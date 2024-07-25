@@ -1,19 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import Plot from 'react-plotly.js';
-import { connect } from 'react-redux';
 import Table from './TableComponents/Table';
 import { colors } from '../../../../styles/data_vis_colors';
 
 const { background_color } = colors;
 
-const mapStateToProps = state => {
-  return {
-    timeSeriesAllData: state.vizReducer.timeSeriesAllData,
-  };
-};
-
-function TimeSeriesAll(props) {
-  const { timeSeriesAllData } = props;
+function TimeSeriesAll({ data }) {
   const currentYear = new Date().getFullYear();
   const [rowsForAllDisplay, setRowsForAllDisplay] = useState([]);
   const columnsForAllDisplay = [
@@ -23,13 +15,17 @@ function TimeSeriesAll(props) {
     '% Admin Close / Dismissal',
     '% Denied',
   ];
+
   useEffect(() => {
-    if (timeSeriesAllData.rowsForAllDisplay === undefined) {
+    if (!data || data.rowsForAllDisplay === undefined) {
       setRowsForAllDisplay([]);
     } else {
-      setRowsForAllDisplay(timeSeriesAllData.rowsForAllDisplay);
+      setRowsForAllDisplay(data.rowsForAllDisplay);
     }
-  }, [timeSeriesAllData]);
+  }, [data]);
+
+  if (!data) return <div>Loading...</div>;
+
   return (
     <div
       className="time-series-all-container"
@@ -45,8 +41,8 @@ function TimeSeriesAll(props) {
       <Plot
         data={[
           {
-            x: timeSeriesAllData['xYears'],
-            y: timeSeriesAllData['yTotalPercentGranteds'],
+            x: data['xYears'],
+            y: data['yTotalPercentGranteds'],
             type: 'scatter',
             mode: 'lines+markers',
             dy: 1,
@@ -59,14 +55,14 @@ function TimeSeriesAll(props) {
           width: 700,
           yaxis: {
             range: [0, 100],
-            title: `Asylum Grant Rate %`,
+            title: 'Asylum Grant Rate %',
             autotick: false,
             dtick: 10,
           },
           xaxis: {
             range: [
-              timeSeriesAllData[0] || 2015,
-              timeSeriesAllData[timeSeriesAllData.length - 1] || currentYear,
+              data['xYears'][0] || 2015,
+              data['xYears'][data['xYears'].length - 1] || currentYear,
             ],
             title: 'Fiscal Year',
           },
@@ -87,4 +83,4 @@ function TimeSeriesAll(props) {
   );
 }
 
-export default connect(mapStateToProps)(TimeSeriesAll);
+export default TimeSeriesAll;

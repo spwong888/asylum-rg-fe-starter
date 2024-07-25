@@ -1,19 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { connect } from 'react-redux';
 import Plot from 'react-plotly.js';
 import Table from './TableComponents/Table';
 import { colors } from '../../../../styles/data_vis_colors';
 
 const { background_color } = colors;
 
-const mapStateToProps = state => {
-  return {
-    officeHeatMapData: state.vizReducer.officeHeatMapData,
-  };
-};
-
-function OfficeHeatMap(props) {
-  const { officeHeatMapData } = props;
+function OfficeHeatMap({ data }) {
   const [plotlyGraphAxis, setPlotlyGraphAxis] = useState({
     x: [],
     y: [],
@@ -22,21 +14,21 @@ function OfficeHeatMap(props) {
   const [rowsForTable, setRowsForTable] = useState([]);
 
   useEffect(() => {
-    if (officeHeatMapData['officeHeatMapDataObject'] !== undefined) {
+    if (data && data['officeHeatMapDataObject'] !== undefined) {
       setPlotlyGraphAxis({
-        x: officeHeatMapData['officeHeatMapDataObject']['x'],
-        y: officeHeatMapData['officeHeatMapDataObject']['y'],
-        z: officeHeatMapData['officeHeatMapDataObject']['z'],
+        x: data['officeHeatMapDataObject']['x'],
+        y: data['officeHeatMapDataObject']['y'],
+        z: data['officeHeatMapDataObject']['z'],
       });
     } else {
       setPlotlyGraphAxis({ x: [], y: [], z: [] });
     }
-    if (officeHeatMapData.rowsForTable === undefined) {
+    if (data && data.rowsForTable === undefined) {
       setRowsForTable([]);
-    } else {
-      setRowsForTable(officeHeatMapData.rowsForTable);
+    } else if (data) {
+      setRowsForTable(data.rowsForTable);
     }
-  }, [officeHeatMapData]);
+  }, [data]);
 
   const columnsForTable = [
     'Year [Office]',
@@ -45,6 +37,8 @@ function OfficeHeatMap(props) {
     '% Admin Close / Dismissal',
     '% Denied',
   ];
+
+  if (!data) return <div>Loading...</div>;
 
   return (
     <div
@@ -100,4 +94,5 @@ function OfficeHeatMap(props) {
   );
 }
 
-export default connect(mapStateToProps)(OfficeHeatMap);
+export default OfficeHeatMap;
+

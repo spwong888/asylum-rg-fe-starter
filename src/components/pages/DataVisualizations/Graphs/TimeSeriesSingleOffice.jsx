@@ -1,20 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { connect } from 'react-redux';
 import Plot from 'react-plotly.js';
 import Table from './TableComponents/Table';
 import { colors } from '../../../../styles/data_vis_colors';
 
 const { background_color } = colors;
 
-const mapStateToProps = (state, ownProps) => {
-  const { office } = ownProps;
-  return {
-    timeSeriesData: state.vizReducer.offices[office].timeSeriesData,
-  };
-};
-
-function TimeSeriesSingleOffice(props) {
-  const { office, timeSeriesData } = props;
+function TimeSeriesSingleOffice({ office, data }) {
   const currentYear = new Date().getFullYear();
   const [plotlyGraphAxis, setPlotlyGraphAxis] = useState({
     x: [2015, currentYear],
@@ -23,20 +14,20 @@ function TimeSeriesSingleOffice(props) {
   const [rowsForTable, setRowsForTable] = useState([]);
 
   useEffect(() => {
-    if (timeSeriesData['singleOfficeDataObject'] !== undefined) {
+    if (data && data['singleOfficeDataObject'] !== undefined) {
       setPlotlyGraphAxis({
-        x: timeSeriesData['singleOfficeDataObject']['xYears'],
-        y: timeSeriesData['singleOfficeDataObject']['yTotalPercentGranteds'],
+        x: data['singleOfficeDataObject']['xYears'],
+        y: data['singleOfficeDataObject']['yTotalPercentGranteds'],
       });
     } else {
       setPlotlyGraphAxis({ x: [2015, currentYear], y: [] });
     }
-    if (timeSeriesData.rowsForTable === undefined) {
+    if (data && data.rowsForTable === undefined) {
       setRowsForTable([]);
-    } else {
-      setRowsForTable(timeSeriesData.rowsForTable);
+    } else if (data) {
+      setRowsForTable(data.rowsForTable);
     }
-  }, [timeSeriesData, currentYear]);
+  }, [data, currentYear]);
 
   const columnsForTable = [
     'Fiscal Year',
@@ -45,6 +36,9 @@ function TimeSeriesSingleOffice(props) {
     '% Admin Close / Dismissal',
     '% Denied',
   ];
+
+  if (!data) return <div>Loading...</div>;
+
   return (
     <div
       className="time-series-single-office-container"
@@ -56,7 +50,7 @@ function TimeSeriesSingleOffice(props) {
         minHeight: '100px',
       }}
     >
-      <p>Showing: Time series data for all USCIS Asylum Offices - ({office})</p>
+      <p>Showing: Time series data for the USCIS Asylum Office - ({office})</p>
       <Plot
         data={[
           {
@@ -103,4 +97,5 @@ function TimeSeriesSingleOffice(props) {
   );
 }
 
-export default connect(mapStateToProps)(TimeSeriesSingleOffice);
+export default TimeSeriesSingleOffice;
+

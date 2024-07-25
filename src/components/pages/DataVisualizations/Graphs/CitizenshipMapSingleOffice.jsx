@@ -1,20 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { connect } from 'react-redux';
 import Plot from 'react-plotly.js';
 import Table from './TableComponents/Table';
 import { colors } from '../../../../styles/data_vis_colors';
 
 const { background_color } = colors;
 
-const mapStateToProps = (state, ownProps) => {
-  const { office } = ownProps;
-  return {
-    citizenshipMapData: state.vizReducer.offices[office].citizenshipMapData,
-  };
-};
-
-function CitizenshipMapSingleOffice(props) {
-  const { office, citizenshipMapData } = props;
+function CitizenshipMapSingleOffice({ office, data }) {
   const [plotlyGraphAxis, setPlotlyGraphAxis] = useState({
     locationsAndText: [],
     z: [],
@@ -22,23 +13,21 @@ function CitizenshipMapSingleOffice(props) {
   const [rowsForTable, setRowsForTable] = useState([]);
 
   useEffect(() => {
-    if (citizenshipMapData['countryGrantRateObj'] !== undefined) {
+    if (data && data['countryGrantRateObj'] !== undefined) {
       setPlotlyGraphAxis({
-        locationsAndText:
-          citizenshipMapData['countryGrantRateObj']['countries'],
-        z: citizenshipMapData['countryGrantRateObj'][
-          'countriesPercentGranteds'
-        ],
+        locationsAndText: data['countryGrantRateObj']['countries'],
+        z: data['countryGrantRateObj']['countriesPercentGranteds'],
       });
     } else {
       setPlotlyGraphAxis({ locationsAndText: [], z: [] });
     }
-    if (citizenshipMapData.rowsForTable === undefined) {
+    if (data && data.rowsForTable === undefined) {
       setRowsForTable([]);
-    } else {
-      setRowsForTable(citizenshipMapData.rowsForTable);
+    } else if (data) {
+      setRowsForTable(data.rowsForTable);
     }
-  }, [citizenshipMapData]);
+  }, [data]);
+
   const geoScopeArray = [
     'world',
     'europe',
@@ -49,10 +38,10 @@ function CitizenshipMapSingleOffice(props) {
   ];
   const [geoScope, setGeoScope] = useState('world');
   const handleScopeChange = e => {
-    //update Plotly region based on dropdown selection
     const { value } = e.target;
     setGeoScope(value);
   };
+
   const columnsForTable = [
     'Citizenship',
     'Total Cases',
@@ -60,6 +49,9 @@ function CitizenshipMapSingleOffice(props) {
     '% Admin Close / Dismissal',
     '% Denied',
   ];
+
+  if (!data) return <div>Loading...</div>;
+
   return (
     <div
       className="citizenship-map-single-office-container"
@@ -72,8 +64,7 @@ function CitizenshipMapSingleOffice(props) {
       }}
     >
       <p>
-        Showing: Rates of 'granted' case decision by nationality of origin, for{' '}
-        {office}
+        Showing: Rates of 'granted' case decision by nationality of origin, for {office}
       </p>
       <Plot
         data={[
@@ -107,10 +98,10 @@ function CitizenshipMapSingleOffice(props) {
         }}
         style={{ width: '100%', fontWeight: '900' }}
       />
-      <label for="regionSelect">Select another region below</label>
+      <label htmlFor="regionSelect">Select another region below</label>
       <select name="regionSelect" onChange={handleScopeChange}>
         {geoScopeArray.map(a => {
-          return <option value={a}>{a.toUpperCase()}</option>;
+          return <option key={a} value={a}>{a.toUpperCase()}</option>;
         })}
       </select>
       <p>Table view</p>
@@ -124,4 +115,5 @@ function CitizenshipMapSingleOffice(props) {
   );
 }
 
-export default connect(mapStateToProps)(CitizenshipMapSingleOffice);
+export default CitizenshipMapSingleOffice;
+
